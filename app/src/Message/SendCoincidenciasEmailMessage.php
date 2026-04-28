@@ -12,6 +12,7 @@ final readonly class SendCoincidenciasEmailMessage
         public ?string $subject = null,
         public ?string $body = null,
         public ?string $sector = null,
+        public ?string $prestador = null,
     ) {
     }
 }

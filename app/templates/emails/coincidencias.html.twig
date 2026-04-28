@@ -22,28 +22,25 @@
                             <div style="font-size:24px; color:#0f172a; font-weight:700; font-variant-numeric:tabular-nums;">{{ rows|number_format(0, ',', '.') }}</div>
                         </td>
                     </tr>
-                    {% if sector %}
                     <tr>
                         <td style="border-top:1px solid #e2e8f0; padding-top:10px;">
                             <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Sector filtrado</div>
-                            <div style="font-size:14px; color:#0f172a; font-weight:600;">{{ sector }}</div>
+                            <div style="font-size:14px; color:#0f172a; font-weight:{{ sector ? 600 : 500 }};">{{ sector ?: 'Todos los sectores' }}</div>
                         </td>
                     </tr>
-                    {% else %}
                     <tr>
                         <td style="border-top:1px solid #e2e8f0; padding-top:10px;">
-                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Filtro</div>
-                            <div style="font-size:14px; color:#0f172a; font-weight:500;">Todos los sectores</div>
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Prestador filtrado</div>
+                            <div style="font-size:14px; color:#0f172a; font-weight:{{ prestador ? 600 : 500 }};">{{ prestador ?: 'Todos los prestadores' }}</div>
                         </td>
                     </tr>
-                    {% endif %}
                 </table>
             </td>
         </tr>
     </table>
 
     <p style="margin:0 0 8px; color:#64748b; font-size:13px;">
-        El archivo viene con coloreo por sector para facilitar la lectura. Revisa el adjunto al pie de este correo.
+        El archivo viene con coloreo por sector. Las filas en <strong style="color:#b91c1c;">rojo</strong> son solicitudes con el mismo RUN+DV repetidas para el mismo prestador (ver columna <em>Repeticiones</em>); las filas marcadas como <strong>No inscritos</strong> son solicitudes de Telesalud que no cruzan con el padrón.
     </p>
 
     {% if customBody %}

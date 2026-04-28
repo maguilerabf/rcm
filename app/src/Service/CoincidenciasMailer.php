@@ -21,7 +21,7 @@ class CoincidenciasMailer
      *
      * @param array<int, string> $to
      */
-    public function sendCoincidencias(array $to, ?string $subject, ?string $body, ?string $sector = null): int
+    public function sendCoincidencias(array $to, ?string $subject, ?string $body, ?string $sector = null, ?string $prestador = null): int
     {
         if (empty($to)) {
             throw new \InvalidArgumentException('Destinatario requerido.');
@@ -32,10 +32,10 @@ class CoincidenciasMailer
             mkdir($tmpDir, 0775, true);
         }
 
-        $filename = $this->exporter->suggestFilename($sector);
+        $filename = $this->exporter->suggestFilename($sector, $prestador);
         $tmpPath = $tmpDir . '/' . $filename;
 
-        $rows = $this->exporter->writeToPath($tmpPath, $sector);
+        $rows = $this->exporter->writeToPath($tmpPath, $sector, $prestador);
 
         try {
             $email = (new TemplatedEmail())
@@ -45,6 +45,7 @@ class CoincidenciasMailer
                 ->context([
                     'rows'       => $rows,
                     'sector'     => $sector,
+                    'prestador'  => $prestador,
                     'customBody' => $body,
                 ])
                 ->attachFromPath($tmpPath, $filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

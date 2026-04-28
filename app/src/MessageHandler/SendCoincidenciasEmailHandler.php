@@ -20,6 +20,7 @@ final readonly class SendCoincidenciasEmailHandler
             subject: $message->subject,
             body: $message->body,
             sector: $message->sector,
+            prestador: $message->prestador,
         );
     }
 }

@@ -57,6 +57,12 @@
                         <option :value="null">Todos los sectores</option>
                         <option v-for="s in sectores" :key="s" :value="s">{{ s }}</option>
                         <option value="__sin_sector__">— Sin sector / no informado —</option>
+                        <option value="__no_inscritos__">— No inscritos —</option>
+                    </select>
+                    <select v-model="prestador" @change="reload(1)" class="input w-52" :disabled="!ready">
+                        <option :value="null">Todos los prestadores</option>
+                        <option v-for="p in prestadores" :key="p" :value="p">{{ p }}</option>
+                        <option value="__sin_prestador__">— Sin prestador —</option>
                     </select>
                     <button @click="downloadXlsx" :disabled="!ready || downloading" class="btn-secondary">
                         <ArrowPathIcon v-if="downloading" class="h-4 w-4 animate-spin" />
@@ -93,10 +99,15 @@
                         <tr v-else-if="rows.length === 0">
                             <td :colspan="columns.length" class="px-3 py-12 text-center text-slate-400 text-sm">Sin resultados con los filtros actuales.</td>
                         </tr>
-                        <tr v-else v-for="row in rows" :key="row.external_id" class="hover:bg-slate-50">
+                        <tr v-else v-for="row in rows" :key="row.external_id" :class="rowClass(row)">
                             <td v-for="col in columns" :key="col.key" class="px-3 py-2 text-slate-700 whitespace-nowrap">
-                                <template v-if="col.key === 'sector'">
-                                    <span :class="['badge', sectorBadgeClass(row.sector)]">{{ row.sector || '—' }}</span>
+                                <template v-if="col.key === 'repeticiones'">
+                                    <span :class="['badge', row.repeticiones > 1 ? 'badge-red font-semibold' : 'badge-slate']">
+                                        {{ row.repeticiones }}
+                                    </span>
+                                </template>
+                                <template v-else-if="col.key === 'sector'">
+                                    <span :class="['badge', sectorBadgeClass(row)]">{{ sectorLabel(row) }}</span>
                                 </template>
                                 <template v-else-if="col.key === 'fecha_solicitud'">
                                     {{ formatDate(row.fecha_solicitud) }}
@@ -135,8 +146,8 @@
             title="Enviar coincidencias por correo"
             default-subject="Coincidencias - Identificación Sectores"
             endpoint="/identificacion-sectores/coincidencias/email"
-            :extra-payload="{ sector }"
-            :context-label="sector ? `Filtrado por sector: ${sector}` : null"
+            :extra-payload="{ sector, prestador }"
+            :context-label="emailContextLabel"
             @close="emailDialog = false"
         />
     </div>
@@ -156,6 +167,7 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const columns = [
+    { key: 'repeticiones', label: 'Repet.' },
     { key: 'sector', label: 'Sector' },
     { key: 'cesfam', label: 'Cesfam' },
     { key: 'prioridad', label: 'Prioridad' },
@@ -178,10 +190,12 @@ const uploadingKind = ref(null);  // 'telesalud' | 'inscritos' | null — bloque
 const rows = ref([]);
 const total = ref(0);
 const sectores = ref([]);
+const prestadores = ref([]);
 const page = ref(1);
 const perPage = ref(50);
 const search = ref('');
 const sector = ref(null);
+const prestador = ref(null);
 const loading = ref(false);
 const downloading = ref(false);
 const emailDialog = ref(false);
@@ -190,6 +204,12 @@ const ready = computed(() => jobs.value.telesalud?.status === 'done' && jobs.val
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage.value)));
 const rangeStart = computed(() => total.value === 0 ? 0 : (page.value - 1) * perPage.value + 1);
 const rangeEnd = computed(() => Math.min(page.value * perPage.value, total.value));
+const emailContextLabel = computed(() => {
+    const parts = [];
+    if (sector.value) parts.push(`sector: ${sector.value}`);
+    if (prestador.value) parts.push(`prestador: ${prestador.value}`);
+    return parts.length ? `Filtrado por ${parts.join(', ')}` : null;
+});
 
 async function loadJobs() {
     const { data } = await api.get('/identificacion-sectores/jobs');
@@ -198,17 +218,24 @@ async function loadJobs() {
 
 async function reload(targetPage = 1) {
     if (!ready.value) {
-        rows.value = []; total.value = 0; sectores.value = []; return;
+        rows.value = []; total.value = 0; sectores.value = []; prestadores.value = []; return;
     }
     loading.value = true;
     page.value = Math.max(1, targetPage);
     try {
         const { data } = await api.get('/identificacion-sectores/coincidencias', {
-            params: { page: page.value, perPage: perPage.value, search: search.value || undefined, sector: sector.value || undefined },
+            params: {
+                page: page.value,
+                perPage: perPage.value,
+                search: search.value || undefined,
+                sector: sector.value || undefined,
+                prestador: prestador.value || undefined,
+            },
         });
         rows.value = data.rows;
         total.value = data.total;
         sectores.value = data.sectores;
+        prestadores.value = data.prestadores || [];
     } finally {
         loading.value = false;
     }
@@ -230,8 +257,12 @@ async function refreshAll() {
 async function downloadXlsx() {
     downloading.value = true;
     try {
-        const url = sector.value
-            ? `/identificacion-sectores/coincidencias/export?sector=${encodeURIComponent(sector.value)}`
+        const qs = new URLSearchParams();
+        if (sector.value) qs.set('sector', sector.value);
+        if (prestador.value) qs.set('prestador', prestador.value);
+        const suffix = qs.toString();
+        const url = suffix
+            ? `/identificacion-sectores/coincidencias/export?${suffix}`
             : '/identificacion-sectores/coincidencias/export';
         const res = await api.get(url, { responseType: 'blob' });
         const cd = res.headers['content-disposition'] || '';
@@ -248,12 +279,24 @@ async function downloadXlsx() {
     }
 }
 
-function sectorBadgeClass(s) {
+function sectorBadgeClass(row) {
+    if (row.en_inscritos === false) return 'badge-amber font-semibold';
+    const s = row.sector;
     if (!s) return 'badge-slate';
     if (/azul/i.test(s)) return 'badge-blue';
     if (/rojo/i.test(s)) return 'badge-red';
     if (/verde/i.test(s)) return 'badge-green';
     return 'badge-amber';
+}
+
+function sectorLabel(row) {
+    if (row.en_inscritos === false) return 'No inscritos';
+    return row.sector || '—';
+}
+
+function rowClass(row) {
+    if (row.repeticiones > 1) return 'bg-rose-50 hover:bg-rose-100';
+    return 'hover:bg-slate-50';
 }
 
 // formatNumber y formatDate vienen de utils/dates

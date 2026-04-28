@@ -33,8 +33,9 @@ class CoincidenciasController extends AbstractController
         $perPage = max(10, min(200, (int) $request->query->get('perPage', 50)));
         $search = $request->query->get('search') ?: null;
         $sector = $request->query->get('sector') ?: null;
+        $prestador = $request->query->get('prestador') ?: null;
 
-        $result = $this->coincidencias->paginate($page, $perPage, $search, $sector);
+        $result = $this->coincidencias->paginate($page, $perPage, $search, $sector, $prestador);
         $jobs = $this->coincidencias->activeJobs();
 
         return new JsonResponse([
@@ -43,6 +44,7 @@ class CoincidenciasController extends AbstractController
             'total' => $result['total'],
             'rows' => $result['rows'],
             'sectores' => $this->coincidencias->distinctSectores(),
+            'prestadores' => $this->coincidencias->distinctPrestadores(),
             'jobs' => [
                 'telesalud' => $jobs['telesalud']?->getId()->toRfc4122(),
                 'inscritos' => $jobs['inscritos']?->getId()->toRfc4122(),
@@ -54,15 +56,16 @@ class CoincidenciasController extends AbstractController
     public function export(Request $request): Response
     {
         $sector = $request->query->get('sector') ?: null;
+        $prestador = $request->query->get('prestador') ?: null;
         $jobs = $this->coincidencias->activeJobs();
         if (!$jobs['telesalud'] || !$jobs['inscritos']) {
             return new JsonResponse(['error' => 'Falta cargar telesalud o inscritos.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $filename = $this->exporter->suggestFilename($sector);
+        $filename = $this->exporter->suggestFilename($sector, $prestador);
         $tmpPath = sys_get_temp_dir() . '/' . $filename;
 
-        $this->exporter->writeToPath($tmpPath, $sector);
+        $this->exporter->writeToPath($tmpPath, $sector, $prestador);
 
         $response = new StreamedResponse(function () use ($tmpPath) {
             $stream = fopen($tmpPath, 'rb');
@@ -115,6 +118,7 @@ class CoincidenciasController extends AbstractController
             subject: isset($payload['subject']) ? (string) $payload['subject'] : null,
             body: isset($payload['body']) ? (string) $payload['body'] : null,
             sector: isset($payload['sector']) && $payload['sector'] !== '' ? (string) $payload['sector'] : null,
+            prestador: isset($payload['prestador']) && $payload['prestador'] !== '' ? (string) $payload['prestador'] : null,
         ));
 
         return new JsonResponse(['queued' => true, 'recipients' => $to], Response::HTTP_ACCEPTED);
