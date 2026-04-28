@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
@@ -82,6 +82,14 @@ async function onLogout() {
     await auth.logout();
     router.push({ name: 'login' });
 }
+
+// Refrescar contadores cuando otra parte del SPA emite "rcm:data-changed".
+// Lo emiten: HistorialCargas (delete one / delete all), upload exitoso, etc.
+function onDataChanged() {
+    loadCounters();
+}
+onMounted(() => window.addEventListener('rcm:data-changed', onDataChanged));
+onUnmounted(() => window.removeEventListener('rcm:data-changed', onDataChanged));
 
 onMounted(loadCounters);
 </script>

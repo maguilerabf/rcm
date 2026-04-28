@@ -10,8 +10,10 @@ api.interceptors.response.use(
     (res) => res,
     (err) => {
         if (err.response?.status === 401 && !err.config?._silent) {
-            // notify auth store via event so router can react
-            window.dispatchEvent(new CustomEvent('rcm:unauthorized'));
+            console.warn('[RCM api] 401 from', err.config?.url, '→ dispatch rcm:unauthorized');
+            window.dispatchEvent(new CustomEvent('rcm:unauthorized', {
+                detail: { url: err.config?.url },
+            }));
         }
         return Promise.reject(err);
     },

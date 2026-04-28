@@ -13,6 +13,8 @@ app.use(pinia);
 app.use(router);
 
 const auth = useAuthStore();
+console.log('[RCM] booting, calling /api/me...');
 auth.fetchMe().finally(() => {
+    console.log('[RCM] fetchMe done. authenticated=', auth.isAuthenticated, 'user=', auth.user);
     app.mount('#app');
 });

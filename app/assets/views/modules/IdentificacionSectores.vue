@@ -223,6 +223,8 @@ function onSearchInput() {
 async function refreshAll() {
     await loadJobs();
     await reload(1);
+    // Notificar al sidebar que el badge de duplicados puede haber cambiado.
+    window.dispatchEvent(new CustomEvent('rcm:data-changed'));
 }
 
 async function downloadXlsx() {

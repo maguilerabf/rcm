@@ -171,6 +171,10 @@ async function reload() {
 function askActivate(j) { confirmActivate.value = j; }
 function askDelete(j) { confirmDelete.value = j; }
 
+function notifyDataChanged() {
+    window.dispatchEvent(new CustomEvent('rcm:data-changed'));
+}
+
 async function doActivate() {
     if (!confirmActivate.value) return;
     const j = confirmActivate.value;
@@ -179,6 +183,7 @@ async function doActivate() {
         await api.post(`/identificacion-sectores/jobs/${j.id}/activate`);
         confirmActivate.value = null;
         await reload();
+        notifyDataChanged();  // sidebar badge debe refrescar (cambia el job activo)
     } finally {
         acting.value = null;
     }
@@ -192,6 +197,7 @@ async function doDelete() {
         await api.delete(`/identificacion-sectores/jobs/${j.id}`);
         confirmDelete.value = null;
         await reload();
+        notifyDataChanged();
     } finally {
         acting.value = null;
     }
@@ -203,6 +209,7 @@ async function doDeleteAll() {
         await api.delete('/identificacion-sectores/jobs');
         confirmDeleteAll.value = false;
         await reload();
+        notifyDataChanged();
     } finally {
         actingAll.value = false;
     }

@@ -39,9 +39,11 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to) => {
+router.beforeEach((to, from) => {
     const auth = useAuthStore();
+    console.log('[RCM router] navigation', from.path, '→', to.path, 'authenticated=', auth.isAuthenticated);
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
+        console.warn('[RCM router] redirect to login (requiresAuth, no auth)');
         return { name: 'login', query: { redirect: to.fullPath } };
     }
     if (to.meta.guestOnly && auth.isAuthenticated) {
@@ -49,8 +51,9 @@ router.beforeEach((to) => {
     }
 });
 
-window.addEventListener('rcm:unauthorized', () => {
+window.addEventListener('rcm:unauthorized', (e) => {
     const auth = useAuthStore();
+    console.warn('[RCM router] rcm:unauthorized event from', e.detail?.url, '→ kick to login');
     auth.user = null;
     if (router.currentRoute.value.name !== 'login') {
         router.push({ name: 'login' });
