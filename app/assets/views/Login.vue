@@ -16,7 +16,7 @@
                     </p>
                 </div>
                 <p class="text-xs text-brand-100/60">
-                    Datos protegidos por Ley 19.628 y Ley 20.584. Acceso autorizado únicamente.
+                    Creado por Mauricio Aguilera (m.aguilera89@gmail.com)
                 </p>
             </div>
         </div>
