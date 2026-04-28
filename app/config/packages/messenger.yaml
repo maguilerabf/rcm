@@ -18,3 +18,4 @@ framework:
             App\Message\ImportInscritosMessage: async
             App\Message\SendCoincidenciasEmailMessage: async
             App\Message\SendDuplicadosEmailMessage: async
+            App\Message\SendWelcomeEmailMessage: async

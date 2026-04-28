@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Message\SendWelcomeEmailMessage;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,6 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,6 +25,7 @@ class RegisterController extends AbstractController
         private readonly UserPasswordHasherInterface $hasher,
         private readonly ValidatorInterface $validator,
         private readonly Security $security,
+        private readonly MessageBusInterface $bus,
     ) {
     }
 
@@ -64,6 +67,13 @@ class RegisterController extends AbstractController
         $this->em->flush();
 
         $this->security->login($user);
+
+        // Welcome email async (no bloquea el response del registro).
+        $this->bus->dispatch(new SendWelcomeEmailMessage(
+            email: $user->getEmail(),
+            firstName: $user->getFirstName(),
+            lastName: $user->getLastName(),
+        ));
 
         return new JsonResponse([
             'user' => [

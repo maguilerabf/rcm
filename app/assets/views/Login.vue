@@ -85,7 +85,7 @@
                             <label class="label" for="reg-first">Nombre</label>
                             <input id="reg-first" v-model="registerForm.firstName" type="text"
                                    name="given-name" autocomplete="given-name" required
-                                   class="input" placeholder="María">
+                                   class="input" placeholder="Mauricio">
                         </div>
                         <div>
                             <label class="label" for="reg-last">Apellido</label>
