@@ -221,9 +221,3 @@ function statusClass(s) {
 
 onMounted(reload);
 </script>
-
-<style scoped>
-.btn-danger {
-    @apply btn bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-</style>

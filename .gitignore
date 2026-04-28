@@ -14,11 +14,12 @@ data/*.xlsx
 !data/DATOS.md
 
 # Environment (NUNCA commitear)
-.env
 .env.local
 .env.*.local
 .env.docker
 .env.bak.*
+# Nota: app/.env SÍ se versiona (Symfony lo necesita). Tiene defaults dev,
+# los valores reales van en .env.local que no se commitea.
 
 # Symfony
 app/var/
