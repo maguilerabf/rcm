@@ -76,6 +76,12 @@
                             Verificando…
                         </span>
                     </button>
+
+                    <div class="text-center">
+                        <RouterLink :to="{ name: 'forgot-password' }" class="text-sm text-brand-700 hover:text-brand-800 hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </RouterLink>
+                    </div>
                 </form>
 
                 <!-- REGISTER -->
@@ -129,7 +135,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute, RouterLink } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 

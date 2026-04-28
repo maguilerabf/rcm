@@ -9,6 +9,18 @@ const routes = [
         meta: { guestOnly: true },
     },
     {
+        path: '/recuperar',
+        name: 'forgot-password',
+        component: () => import('../views/ForgotPassword.vue'),
+        meta: { guestOnly: true },
+    },
+    {
+        path: '/recuperar/:token',
+        name: 'reset-password',
+        component: () => import('../views/ResetPassword.vue'),
+        meta: { guestOnly: true },
+    },
+    {
         path: '/',
         component: () => import('../components/AppLayout.vue'),
         meta: { requiresAuth: true },
@@ -39,11 +51,9 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
     const auth = useAuthStore();
-    console.log('[RCM router] navigation', from.path, '→', to.path, 'authenticated=', auth.isAuthenticated);
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
-        console.warn('[RCM router] redirect to login (requiresAuth, no auth)');
         return { name: 'login', query: { redirect: to.fullPath } };
     }
     if (to.meta.guestOnly && auth.isAuthenticated) {
@@ -51,9 +61,8 @@ router.beforeEach((to, from) => {
     }
 });
 
-window.addEventListener('rcm:unauthorized', (e) => {
+window.addEventListener('rcm:unauthorized', () => {
     const auth = useAuthStore();
-    console.warn('[RCM router] rcm:unauthorized event from', e.detail?.url, '→ kick to login');
     auth.user = null;
     if (router.currentRoute.value.name !== 'login') {
         router.push({ name: 'login' });
