@@ -19,3 +19,4 @@ framework:
             App\Message\SendCoincidenciasEmailMessage: async
             App\Message\SendDuplicadosEmailMessage: async
             App\Message\SendWelcomeEmailMessage: async
+            App\Message\SendPasswordResetEmailMessage: async
