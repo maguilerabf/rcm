@@ -26,9 +26,9 @@ class WelcomeMailer
             ->subject('¡Bienvenido a RCM!')
             ->htmlTemplate('emails/welcome.html.twig')
             ->context([
-                'displayName' => $displayName,
-                'email'       => $to,
-                'loginUrl'    => $loginUrl,
+                'displayName'    => $displayName,
+                'recipientEmail' => $to,
+                'loginUrl'       => $loginUrl,
             ]);
 
         $this->mailer->send($email);
