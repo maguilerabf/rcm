@@ -1,0 +1,108 @@
+name: rcm
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: dev
+    container_name: rcm-php
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+      MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM}
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      STORAGE_THRESHOLD_BYTES: ${STORAGE_THRESHOLD_BYTES:-10737418240}
+      STORAGE_TARGET_BYTES: ${STORAGE_TARGET_BYTES:-5368709120}
+      TRUSTED_PROXIES: 127.0.0.1,REMOTE_ADDR
+      PHP_IDE_CONFIG: serverName=rcm
+    volumes:
+      - ./app:/srv/app:cached
+      - php_var:/srv/app/var
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - rcm
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: rcm-nginx
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./app/public:/srv/app/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    networks:
+      - rcm
+
+  db:
+    image: postgres:16-alpine
+    container_name: rcm-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rcm
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: dev
+    container_name: rcm-worker
+    command: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=512M --no-debug
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+      MAILER_DSN: ${MAILER_DSN}
+      MAILER_FROM: ${MAILER_FROM}
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      STORAGE_THRESHOLD_BYTES: ${STORAGE_THRESHOLD_BYTES:-10737418240}
+      STORAGE_TARGET_BYTES: ${STORAGE_TARGET_BYTES:-5368709120}
+    volumes:
+      - ./app:/srv/app:cached
+      - php_var:/srv/app/var
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rcm
+
+  node:
+    image: node:20-alpine
+    container_name: rcm-node
+    working_dir: /srv/app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    volumes:
+      - ./app:/srv/app:cached
+      - node_modules:/srv/app/node_modules
+    networks:
+      - rcm
+
+volumes:
+  db_data:
+  php_var:
+  node_modules:
+
+networks:
+  rcm:
+    driver: bridge

@@ -1,0 +1,29 @@
+parameters:
+    app.upload_dir: '%kernel.project_dir%/var/uploads'
+    app.mailer_from: '%env(MAILER_FROM)%'
+    app.storage_threshold_bytes: '%env(int:STORAGE_THRESHOLD_BYTES)%'
+    app.storage_target_bytes: '%env(int:STORAGE_TARGET_BYTES)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            string $uploadDir: '%app.upload_dir%'
+            string $mailerFrom: '%app.mailer_from%'
+            bool $debug: '%kernel.debug%'
+            int $thresholdBytes: '%app.storage_threshold_bytes%'
+            int $targetBytes: '%app.storage_target_bytes%'
+            string $projectDir: '%kernel.project_dir%'
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Migrations/'
+
+    App\EventSubscriber\JsonExceptionSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }

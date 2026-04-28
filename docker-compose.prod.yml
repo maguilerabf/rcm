@@ -1,0 +1,44 @@
+name: rcm
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: prod
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+    volumes:
+      - php_uploads:/srv/app/var/uploads
+      - php_logs:/srv/app/var/log
+
+  nginx:
+    restart: unless-stopped
+    volumes:
+      - php_public:/srv/app/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  db:
+    restart: unless-stopped
+    ports: []
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: prod
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+    volumes:
+      - php_uploads:/srv/app/var/uploads
+      - php_logs:/srv/app/var/log
+
+  node:
+    profiles: ["never"]
+
+volumes:
+  php_uploads:
+  php_logs:
+  php_public:

@@ -1,0 +1,32 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    handle_all_throwables: true
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+
+    session:
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax
+        cookie_lifetime: 86400        # 24h: cookie sobrevive a reload y a cerrar el browser
+        gc_maxlifetime: 86400         # 24h server-side: la data de sesión no se borra antes
+        save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'  # var/ está en volumen Docker, persiste a restarts
+        storage_factory_id: session.storage.factory.native
+
+    php_errors:
+        log: true
+
+    csrf_protection: true
+
+    serializer:
+        enable_attributes: true
+
+    validation:
+        email_validation_mode: html5
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

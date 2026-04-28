@@ -1,0 +1,57 @@
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Datos sensibles (Ley 19.628 / 20.584)
+*.csv
+*.xlsx
+data/*.csv
+data/*.xlsx
+!data/DATOS.md
+
+# Environment (NUNCA commitear)
+.env
+.env.local
+.env.*.local
+.env.docker
+.env.bak.*
+
+# Symfony
+app/var/
+!app/var/uploads/.gitkeep
+app/vendor/
+app/public/build/
+app/public/bundles/
+app/.phpunit.result.cache
+
+# Node
+app/node_modules/
+app/npm-debug.log*
+app/yarn-debug.log*
+app/yarn-error.log*
+
+# Docker / scripts de dev efímeros (one-off durante el bringup local)
+docker-compose.override.local.yml
+docker/sync-*.sh
+docker/test-*.sh
+docker/debug-*.sh
+docker/check-*.sh
+docker/diagnose-*.sh
+docker/smoke-*.sh
+docker/setup-gmail.sh
+docker/reset-admin.sh
+docker/reset-imports.sh
+docker/migrate-history.sh
+docker/move-to-wsl.sh
+docker/force-recreate-and-test.sh
+docker/retry-email.sh
+docker/send-email-final.sh
+docker/run-benchmark.sh
+docker/rebuild-with-python.sh
+docker/setup-cleanup.sh
+docker/fix-and-retry.sh
+docker/fix-name.sh
