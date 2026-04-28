@@ -14,10 +14,17 @@ use Symfony\Component\Process\Process;
  */
 class XlsxToCsvConverter
 {
+    /**
+     * @var bool|null cache del check de disponibilidad para no re-ejecutarlo en cada import.
+     */
+    private ?bool $availableCache = null;
+
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly string $projectDir,
-        private readonly string $pythonBin = 'python3',
+        // Path absoluto: si dependemos del PATH del proceso (e.g. systemd), Symfony Process
+        // puede no encontrar python3 silenciosamente.
+        private readonly string $pythonBin = '/usr/bin/python3',
         private readonly int $timeoutSeconds = 600,
     ) {
     }
@@ -70,12 +77,28 @@ class XlsxToCsvConverter
 
     public function isAvailable(): bool
     {
+        if ($this->availableCache !== null) {
+            return $this->availableCache;
+        }
         try {
             $p = new Process([$this->pythonBin, '-c', 'import openpyxl; print("ok")']);
             $p->setTimeout(10);
             $p->mustRun();
-            return trim($p->getOutput()) === 'ok';
-        } catch (\Throwable) {
+            $ok = trim($p->getOutput()) === 'ok';
+            $this->availableCache = $ok;
+            if (!$ok) {
+                $this->logger->warning('XlsxToCsvConverter: python OK pero openpyxl no responde "ok"', [
+                    'python' => $this->pythonBin,
+                    'output' => $p->getOutput(),
+                ]);
+            }
+            return $ok;
+        } catch (\Throwable $e) {
+            $this->logger->warning('XlsxToCsvConverter: python no disponible, fallback a openspout', [
+                'python' => $this->pythonBin,
+                'error' => $e->getMessage(),
+            ]);
+            $this->availableCache = false;
             return false;
         }
     }
