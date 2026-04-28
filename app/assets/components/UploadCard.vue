@@ -57,8 +57,8 @@
 
             <div v-if="uploading || isProcessing" class="rounded-lg bg-brand-50 ring-1 ring-brand-200 px-3 py-2 text-xs text-brand-800 flex items-center gap-2">
                 <ArrowPathIcon class="h-3.5 w-3.5 animate-spin flex-shrink-0" />
-                <span v-if="uploading">Subiendo archivo… (el procesamiento arranca solo)</span>
-                <span v-else>Procesando ({{ activeJob?.status }})… podés seguir usando la app</span>
+                <span v-if="uploading">Subiendo archivo… El procesamiento se inicia automáticamente.</span>
+                <span v-else>Procesando ({{ activeJob?.status }})… puedes seguir usando la aplicación.</span>
             </div>
 
             <p v-if="uploadError" class="text-xs text-rose-600">{{ uploadError }}</p>
