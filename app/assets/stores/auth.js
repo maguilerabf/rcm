@@ -53,8 +53,12 @@ export const useAuthStore = defineStore('auth', {
         },
         async logout() {
             try {
-                await fetch('/logout', { credentials: 'include' });
-            } catch (_) { /* ignore */ }
+                await fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'include',
+                    redirect: 'manual',
+                });
+            } catch (_) { /* ignore — el redirect 302 se considera "opaqueredirect" */ }
             this.user = null;
         },
     },

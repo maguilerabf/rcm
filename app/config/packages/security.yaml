@@ -25,6 +25,7 @@ security:
             logout:
                 path: app_logout
                 target: /
+                enable_csrf: false
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }

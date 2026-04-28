@@ -26,7 +26,7 @@ class AppController extends AbstractController
         throw new AuthenticationException('Login no procesado por el firewall.');
     }
 
-    #[Route('/logout', name: 'app_logout', methods: ['GET', 'POST'])]
+    #[Route('/logout', name: 'app_logout', methods: ['POST'])]
     public function logout(): never
     {
         throw new \LogicException('Logout interceptado por el firewall.');
