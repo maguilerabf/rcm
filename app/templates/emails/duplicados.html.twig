@@ -1,0 +1,76 @@
+{% extends 'emails/_layout.html.twig' %}
+
+{% block title %}Duplicados Inscritos - RCM{% endblock %}
+{% block headerSubtitle %}Posibles duplicados detectados{% endblock %}
+
+{% block content %}
+    <h1 style="margin:0 0 16px; font-size:20px; font-weight:600; color:#0f172a; letter-spacing:-0.01em;">
+        Reporte de duplicados
+    </h1>
+
+    <p style="margin:0 0 16px; color:#334155;">
+        Te adjuntamos el archivo Excel con los registros que aparecen como <strong>posibles duplicados</strong> en el padrón de inscritos
+        (mismo nombre / RUN distinto, normalmente casos de RUN provisorio → permanente).
+    </p>
+
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:24px 0;">
+        <tr>
+            <td style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td style="padding-bottom:10px;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Registros incluidos</div>
+                            <div style="font-size:24px; color:#0f172a; font-weight:700; font-variant-numeric:tabular-nums;">{{ rows|number_format(0, ',', '.') }}</div>
+                        </td>
+                    </tr>
+                    {% if matchTypes is not empty %}
+                    <tr>
+                        <td style="border-top:1px solid #e2e8f0; padding-top:10px; padding-bottom:10px;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Tipo de coincidencia</div>
+                            <div>
+                                {% for t in matchTypes %}
+                                    <span style="display:inline-block; background:{{ t == 'full' ? '#dcfce7' : '#fef3c7' }}; color:{{ t == 'full' ? '#166534' : '#92400e' }}; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; margin-right:6px; text-transform:capitalize;">
+                                        {{ t == 'full' ? 'Coincidencia exacta' : 'Coincidencia parcial' }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td style="border-top:1px solid #e2e8f0; padding-top:10px; padding-bottom:10px;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Tipo de coincidencia</div>
+                            <div style="font-size:14px; color:#0f172a; font-weight:500;">Todas (exactas y parciales)</div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if search %}
+                    <tr>
+                        <td style="border-top:1px solid #e2e8f0; padding-top:10px;">
+                            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Búsqueda aplicada</div>
+                            <div style="font-size:14px; color:#0f172a; font-weight:500; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">{{ search }}</div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <p style="margin:0 0 8px; color:#64748b; font-size:13px;">
+        Cada grupo aparece coloreado para que sea fácil identificar las personas que comparten datos. Revisa el adjunto al pie de este correo.
+    </p>
+
+    {% if customBody %}
+        <div style="margin:24px 0 0; padding:16px 18px; background:#fefce8; border:1px solid #fde68a; border-radius:10px; color:#713f12; font-size:13px;">
+            {{ customBody|nl2br }}
+        </div>
+    {% endif %}
+
+    <p style="margin:24px 0 0; color:#334155;">
+        Saludos,<br>
+        <span style="color:#64748b;">Equipo RCM</span>
+    </p>
+{% endblock %}
+
+{% block footerExtra %} Generado automáticamente desde el módulo Duplicados Inscritos.{% endblock %}

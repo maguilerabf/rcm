@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 
 class DuplicadosMailer
 {
@@ -39,10 +39,16 @@ class DuplicadosMailer
         $rows = $this->exporter->writeToPath($tmpPath, $matchTypes, $search);
 
         try {
-            $email = (new Email())
+            $email = (new TemplatedEmail())
                 ->from(Address::create($this->mailerFrom))
                 ->subject($subject ?: 'Duplicados Inscritos - RCM')
-                ->text($body ?: $this->defaultBody($rows, $matchTypes, $search))
+                ->htmlTemplate('emails/duplicados.html.twig')
+                ->context([
+                    'rows'       => $rows,
+                    'matchTypes' => $matchTypes ?? [],
+                    'search'     => $search,
+                    'customBody' => $body,
+                ])
                 ->attachFromPath($tmpPath, $filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             foreach ($to as $recipient) {
@@ -55,18 +61,5 @@ class DuplicadosMailer
         }
 
         return $rows;
-    }
-
-    private function defaultBody(int $rows, ?array $matchTypes, ?string $search): string
-    {
-        $tipoTxt = $matchTypes
-            ? "Tipo de coincidencia: " . implode(', ', $matchTypes) . "\n"
-            : '';
-        $searchTxt = $search ? "Búsqueda aplicada: {$search}\n" : '';
-        return <<<TXT
-        Adjunto archivo con {$rows} registros que aparecen como posibles duplicados en el padrón de inscritos.
-        {$tipoTxt}{$searchTxt}
-        Generado automáticamente por RCM.
-        TXT;
     }
 }

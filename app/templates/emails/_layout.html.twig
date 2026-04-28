@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RCM{% endblock %}</title>
+    <style>
+        @media only screen and (max-width: 620px) {
+            .container { width: 100% !important; }
+            .content   { padding: 24px !important; }
+            .header    { padding: 28px 24px !important; }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background:#f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#0f172a;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f1f5f9; padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container" style="max-width:600px; background:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,0.06), 0 12px 32px -12px rgba(15,23,42,0.10);">
+
+                    <tr>
+                        <td class="header" style="background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%); padding:36px 40px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td style="background:rgba(255,255,255,0.12); width:44px; height:44px; border-radius:12px; text-align:center; vertical-align:middle; color:#fff; font-weight:700; font-size:20px; padding:0;">R</td>
+                                                <td style="padding-left:14px; color:#ffffff; font-size:18px; font-weight:600; letter-spacing:-0.01em; vertical-align:middle;">
+                                                    RCM
+                                                    <div style="font-size:12px; font-weight:400; color:rgba(255,255,255,0.75); margin-top:2px;">{% block headerSubtitle %}Reportes operacionales{% endblock %}</div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="content" style="padding:40px 44px; line-height:1.6; color:#0f172a; font-size:15px;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#f8fafc; padding:20px 44px; border-top:1px solid #e2e8f0;">
+                            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+                                Este correo fue enviado automáticamente por <strong style="color:#334155;">RCM</strong>.
+                                {% block footerExtra %}{% endblock %}
+                            </p>
+                            <p style="margin:8px 0 0; font-size:11px; color:#94a3b8;">
+                                Información sensible protegida por Ley 19.628 y Ley 20.584. Si recibiste este mensaje por error, ignóralo o avísanos.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

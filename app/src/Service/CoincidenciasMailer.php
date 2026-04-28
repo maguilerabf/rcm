@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 
 class CoincidenciasMailer
 {
@@ -38,10 +38,15 @@ class CoincidenciasMailer
         $rows = $this->exporter->writeToPath($tmpPath, $sector);
 
         try {
-            $email = (new Email())
+            $email = (new TemplatedEmail())
                 ->from(Address::create($this->mailerFrom))
                 ->subject($subject ?: 'Coincidencias - Identificación Sectores')
-                ->text($body ?: $this->defaultBody($rows, $sector))
+                ->htmlTemplate('emails/coincidencias.html.twig')
+                ->context([
+                    'rows'       => $rows,
+                    'sector'     => $sector,
+                    'customBody' => $body,
+                ])
                 ->attachFromPath($tmpPath, $filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             foreach ($to as $recipient) {
@@ -54,15 +59,5 @@ class CoincidenciasMailer
         }
 
         return $rows;
-    }
-
-    private function defaultBody(int $rows, ?string $sector): string
-    {
-        $sectorTxt = $sector ? "Sector: {$sector}\n" : '';
-        return <<<TXT
-        Adjunto archivo con {$rows} coincidencias del cruce Reporte Telesalud × Padrón Inscritos.
-        {$sectorTxt}
-        Generado automáticamente por RCM.
-        TXT;
     }
 }

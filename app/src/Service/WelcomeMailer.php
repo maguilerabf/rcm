@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 
 class WelcomeMailer
 {
@@ -17,27 +17,19 @@ class WelcomeMailer
 
     public function send(string $to, string $firstName, string $lastName): void
     {
-        $displayName = trim($firstName . ' ' . $lastName);
+        $displayName = trim($firstName . ' ' . $lastName) ?: 'usuario(a)';
+        $loginUrl = rtrim($this->appUrl, '/') . '/login';
 
-        $body = <<<TEXT
-        Hola {$displayName},
-
-        Tu cuenta en RCM ha sido creada con éxito.
-
-        Acceso:        {$this->appUrl}/login
-        Email:         {$to}
-
-        Por seguridad, no compartas tus credenciales y cambia tu contraseña periódicamente.
-
-        --
-        Equipo RCM
-        TEXT;
-
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from(Address::create($this->mailerFrom))
             ->to($to)
             ->subject('¡Bienvenido a RCM!')
-            ->text($body);
+            ->htmlTemplate('emails/welcome.html.twig')
+            ->context([
+                'displayName' => $displayName,
+                'email'       => $to,
+                'loginUrl'    => $loginUrl,
+            ]);
 
         $this->mailer->send($email);
     }
