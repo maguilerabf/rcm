@@ -20,6 +20,9 @@
                 description="Archivo .xlsx con la columna 'Nº identificador' (RUN+DV concatenado)."
                 :icon="DocumentTextIcon"
                 :latest-job="jobs.telesalud"
+                :disabled="uploadingKind === 'inscritos'"
+                @upload-start="uploadingKind = $event"
+                @upload-end="uploadingKind = null"
                 @updated="refreshAll"
             />
             <UploadCard
@@ -28,6 +31,9 @@
                 description="Padrón de inscritos con columnas RUN, DV y SECTOR."
                 :icon="UserGroupIcon"
                 :latest-job="jobs.inscritos"
+                :disabled="uploadingKind === 'telesalud'"
+                @upload-start="uploadingKind = $event"
+                @upload-end="uploadingKind = null"
                 @updated="refreshAll"
             />
         </div>
@@ -168,6 +174,7 @@ const columns = [
 ];
 
 const jobs = ref({ telesalud: null, inscritos: null });
+const uploadingKind = ref(null);  // 'telesalud' | 'inscritos' | null — bloquea el otro card mientras uno sube
 const rows = ref([]);
 const total = ref(0);
 const sectores = ref([]);

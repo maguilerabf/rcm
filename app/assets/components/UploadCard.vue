@@ -1,5 +1,5 @@
 <template>
-    <div class="card p-5">
+    <div :class="['card p-5 transition', disabled && 'opacity-60 pointer-events-none']">
         <div class="flex items-start gap-3">
             <div class="h-10 w-10 rounded-lg bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0">
                 <component :is="icon" class="h-5 w-5" />
@@ -11,21 +11,27 @@
             <span :class="['badge-' + statusColor]" class="capitalize">{{ statusLabel }}</span>
         </div>
 
-        <div class="mt-4 space-y-3">
+        <div v-if="disabled" class="mt-3 rounded-lg bg-amber-50 ring-1 ring-amber-200 px-3 py-2 text-xs text-amber-800 flex items-center gap-2">
+            <ArrowPathIcon class="h-3.5 w-3.5 animate-spin flex-shrink-0" />
+            Esperando que termine la subida del otro archivo…
+        </div>
+
+        <div v-if="!disabled" class="mt-4 space-y-3">
             <label class="block">
                 <span class="sr-only">Archivo</span>
                 <input
                     ref="fileInput"
                     type="file"
                     accept=".xlsx,.csv"
+                    :disabled="uploading || isProcessing"
                     @change="onFileChange"
-                    class="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer"
+                    class="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 />
             </label>
 
             <div v-if="selectedFile" class="text-xs text-slate-500 flex items-center justify-between gap-2">
                 <span class="truncate">{{ selectedFile.name }} · {{ formatSize(selectedFile.size) }}</span>
-                <button @click="clear" class="text-slate-400 hover:text-rose-600">Quitar</button>
+                <button v-if="!uploading && !isProcessing" @click="clear" class="text-slate-400 hover:text-rose-600">Quitar</button>
             </div>
 
             <div v-if="latestJob" :class="['rounded-lg ring-1 px-3 py-2.5 text-xs space-y-1 transition', justUpdated ? 'bg-emerald-50 ring-emerald-200' : 'bg-slate-50 ring-slate-200']">
@@ -49,13 +55,11 @@
                 <div v-if="latestJob.error" class="text-rose-600">{{ latestJob.error }}</div>
             </div>
 
-            <button @click="upload" :disabled="!selectedFile || uploading || isProcessing" class="btn-primary w-full">
-                <ArrowPathIcon v-if="uploading || isProcessing" class="h-4 w-4 animate-spin" />
-                <CloudArrowUpIcon v-else class="h-4 w-4" />
-                <span v-if="uploading">Subiendo…</span>
-                <span v-else-if="isProcessing">Procesando ({{ activeJob?.status }})…</span>
-                <span v-else>Subir y procesar</span>
-            </button>
+            <div v-if="uploading || isProcessing" class="rounded-lg bg-brand-50 ring-1 ring-brand-200 px-3 py-2 text-xs text-brand-800 flex items-center gap-2">
+                <ArrowPathIcon class="h-3.5 w-3.5 animate-spin flex-shrink-0" />
+                <span v-if="uploading">Subiendo archivo… (el procesamiento arranca solo)</span>
+                <span v-else>Procesando ({{ activeJob?.status }})… podés seguir usando la app</span>
+            </div>
 
             <p v-if="uploadError" class="text-xs text-rose-600">{{ uploadError }}</p>
         </div>
@@ -74,8 +78,9 @@ const props = defineProps({
     description: { type: String, required: true },
     icon: { type: [Object, Function], required: true },
     latestJob: { type: Object, default: null },
+    disabled: { type: Boolean, default: false },
 });
-const emit = defineEmits(['done', 'updated']);
+const emit = defineEmits(['done', 'updated', 'upload-start', 'upload-end']);
 
 const fileInput = ref(null);
 const selectedFile = ref(null);
@@ -101,6 +106,10 @@ const statusColor = computed(() => {
 function onFileChange(e) {
     selectedFile.value = e.target.files?.[0] || null;
     uploadError.value = null;
+    // Auto-iniciar la subida apenas el usuario selecciona el archivo.
+    if (selectedFile.value) {
+        upload();
+    }
 }
 function clear() {
     selectedFile.value = null;
@@ -111,6 +120,7 @@ async function upload() {
     if (!selectedFile.value) return;
     uploading.value = true;
     uploadError.value = null;
+    emit('upload-start', props.kind);
     try {
         const fd = new FormData();
         fd.append('file', selectedFile.value);
@@ -124,6 +134,7 @@ async function upload() {
         uploadError.value = e.response?.data?.error || 'Error al subir el archivo.';
     } finally {
         uploading.value = false;
+        emit('upload-end', props.kind);  // libera el otro card
     }
 }
 
