@@ -258,7 +258,7 @@ Group=rcm
 WorkingDirectory=/var/www/rcm/app/app
 Environment="APP_ENV=prod"
 ExecStart=/usr/bin/php bin/console messenger:consume async --time-limit=3600 --memory-limit=256M --no-debug
-Restart=on-failure
+Restart=always
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
