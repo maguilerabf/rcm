@@ -56,7 +56,6 @@
                     <select v-model="sector" @change="reload(1)" class="input w-52" :disabled="!ready">
                         <option :value="null">Todos los sectores</option>
                         <option v-for="s in sectores" :key="s" :value="s">{{ s }}</option>
-                        <option value="__sin_sector__">— Sin sector / no informado —</option>
                         <option value="__no_inscritos__">— No inscritos —</option>
                     </select>
                     <select v-model="prestador" @change="reload(1)" class="input w-52" :disabled="!ready">
