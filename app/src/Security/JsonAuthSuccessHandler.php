@@ -25,8 +25,8 @@ class JsonAuthSuccessHandler implements AuthenticationSuccessHandlerInterface
                 $request->getSession()->invalidate();
             }
             $msg = $user->isPending()
-                ? 'Tu cuenta está pendiente de aprobación por el administrador. Revisá tu correo.'
-                : 'Tu cuenta no está habilitada para acceder. Contactá al administrador.';
+                ? 'Tu cuenta está pendiente de aprobación por el administrador. Revisa tu correo.'
+                : 'Tu cuenta no está habilitada para acceder. Contacta al administrador.';
             return new JsonResponse(['error' => $msg], Response::HTTP_FORBIDDEN);
         }
 

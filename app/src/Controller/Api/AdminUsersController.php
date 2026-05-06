@@ -20,6 +20,7 @@ class AdminUsersController extends AbstractController
         private readonly UserRepository $users,
         private readonly UserApprovalService $approval,
         private readonly EntityManagerInterface $em,
+        private readonly string $superAdminEmail,
     ) {
     }
 
@@ -145,6 +146,7 @@ class AdminUsersController extends AbstractController
             'displayName' => $u->getDisplayName(),
             'roles' => $u->getRoles(),
             'status' => $u->getStatus(),
+            'isSuperAdmin' => strcasecmp($u->getEmail(), $this->superAdminEmail) === 0,
             'approvedAt' => $u->getApprovedAt()?->format(\DateTimeInterface::ATOM),
             'createdAt' => $u->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ];

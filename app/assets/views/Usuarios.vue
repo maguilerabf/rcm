@@ -2,7 +2,7 @@
     <div class="max-w-6xl mx-auto">
         <h2 class="font-semibold text-2xl text-slate-900 mb-1">Usuarios</h2>
         <p class="text-sm text-slate-500 mb-4">
-            Solo el super-admin (vos) puede ver esta pantalla. Aquí aparecen las solicitudes de registro y los usuarios activos.
+            Solo el super-admin puede ver esta pantalla. Aquí aparecen las solicitudes de registro y los usuarios activos.
         </p>
 
         <div v-if="pendingUsers.length > 0" class="card p-4 mb-6 border-l-4 border-amber-400">
@@ -53,14 +53,14 @@
                             <div class="text-xs text-slate-500">{{ u.email }}</div>
                         </td>
                         <td class="px-4 py-2.5">
-                            <span class="badge-slate">{{ roleLabel(u.roles) }}</span>
+                            <span :class="u.isSuperAdmin ? 'badge-blue' : 'badge-slate'">{{ roleLabel(u) }}</span>
                         </td>
                         <td class="px-4 py-2.5">
                             <span :class="statusClass(u.status)">{{ statusLabel(u.status) }}</span>
                         </td>
                         <td class="px-4 py-2.5 text-xs text-slate-500">{{ formatDateTime(u.createdAt) }}</td>
                         <td class="px-4 py-2.5 text-right">
-                            <button v-if="u.status === 'active' && !isSelf(u)" @click="changeRole(u)" class="text-brand-700 hover:text-brand-800 text-xs">Cambiar rol</button>
+                            <button v-if="canChangeRole(u)" @click="changeRole(u)" class="text-brand-700 hover:text-brand-800 text-xs">Cambiar rol</button>
                         </td>
                     </tr>
                 </tbody>
@@ -83,12 +83,16 @@ function statusLabel(s) { return ({ pending: 'Pendiente', active: 'Activo', reje
 function statusClass(s) {
     return ({ pending: 'badge-amber', active: 'badge-green', rejected: 'badge-red' })[s] ?? 'badge-slate';
 }
-function roleLabel(roles) {
-    if (!roles) return 'Usuario';
-    if (roles.includes('ROLE_ADMIN')) return 'Admin';
+function roleLabel(u) {
+    if (u?.isSuperAdmin) return 'Super-admin';
+    if (u?.roles?.includes('ROLE_ADMIN')) return 'Admin';
     return 'Usuario';
 }
 function isSelf(u) { return u.email === auth.user?.email; }
+function canChangeRole(u) {
+    // El super-admin no se puede degradar y el usuario actual no se cambia su propio rol acá.
+    return u.status === 'active' && !isSelf(u) && !u.isSuperAdmin;
+}
 
 function formatDateTime(iso) {
     if (!iso) return '';

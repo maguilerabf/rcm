@@ -94,7 +94,7 @@ class PasswordResetController extends AbstractController
 
         return new JsonResponse([
             'ok' => true,
-            'message' => 'Tu contraseña fue actualizada. Ya podés iniciar sesión con la nueva.',
+            'message' => 'Tu contraseña fue actualizada. Ya puedes iniciar sesión con la nueva.',
         ]);
     }
 }

@@ -70,7 +70,7 @@ class RegisterController extends AbstractController
         // No autologin: la cuenta queda pendiente.
         return new JsonResponse([
             'pending' => true,
-            'message' => 'Tu solicitud fue enviada. Cuando el administrador la apruebe vas a recibir un correo y podrás iniciar sesión.',
+            'message' => 'Tu solicitud fue enviada. Cuando el administrador la apruebe recibirás un correo y podrás iniciar sesión.',
         ], Response::HTTP_CREATED);
     }
 }

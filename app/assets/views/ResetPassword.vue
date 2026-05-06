@@ -70,7 +70,7 @@
                     <CheckCircleIcon class="h-5 w-5 flex-shrink-0 mt-0.5" />
                     <div>
                         <p class="font-medium">Listo, tu contraseña fue cambiada.</p>
-                        <p class="mt-1">Ya podés iniciar sesión con la nueva contraseña.</p>
+                        <p class="mt-1">Ya puedes iniciar sesión con la nueva contraseña.</p>
                     </div>
                 </div>
                 <RouterLink :to="{ name: 'login' }" class="btn-primary w-full py-2.5 inline-flex items-center justify-center gap-2 no-underline">

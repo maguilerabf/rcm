@@ -181,7 +181,7 @@ async function onRegister() {
     const result = await auth.register(registerForm);
     if (result?.pending) {
         registerSent.value = true;
-        registerMessage.value = result.message || 'Tu solicitud fue enviada. Cuando el administrador la apruebe vas a recibir un correo y podrás iniciar sesión.';
+        registerMessage.value = result.message || 'Tu solicitud fue enviada. Cuando el administrador la apruebe recibirás un correo y podrás iniciar sesión.';
     }
 }
 </script>
