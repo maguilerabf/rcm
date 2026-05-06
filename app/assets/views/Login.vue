@@ -84,6 +84,15 @@
                     </div>
                 </form>
 
+                <!-- REGISTER (después de envío exitoso) -->
+                <div v-else-if="registerSent" class="mt-8 rounded-lg bg-emerald-50 ring-1 ring-emerald-200 px-4 py-4 text-sm text-emerald-800 flex gap-3">
+                    <CheckCircleIcon class="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p class="font-medium">Solicitud enviada</p>
+                        <p class="mt-1">{{ registerMessage }}</p>
+                    </div>
+                </div>
+
                 <!-- REGISTER -->
                 <form v-else @submit.prevent="onRegister" method="post" action="/api/register" class="mt-8 space-y-5">
                     <div class="grid grid-cols-2 gap-3">
@@ -137,7 +146,7 @@
 import { ref, reactive } from 'vue';
 import { useRouter, useRoute, RouterLink } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import { ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ExclamationCircleIcon, ArrowPathIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -147,11 +156,14 @@ const mode = ref(route.query.mode === 'register' ? 'register' : 'login');
 
 const loginForm = reactive({ email: '', password: '' });
 const registerForm = reactive({ firstName: '', lastName: '', email: '', password: '' });
+const registerSent = ref(false);
+const registerMessage = ref('');
 
 function setMode(next) {
     if (mode.value === next) return;
     mode.value = next;
     auth.error = null;
+    registerSent.value = false;
 }
 
 async function goNext() {
@@ -166,8 +178,10 @@ async function onLogin() {
 }
 
 async function onRegister() {
-    if (await auth.register(registerForm)) {
-        await goNext();
+    const result = await auth.register(registerForm);
+    if (result?.pending) {
+        registerSent.value = true;
+        registerMessage.value = result.message || 'Tu solicitud fue enviada. Cuando el administrador la apruebe vas a recibir un correo y podrás iniciar sesión.';
     }
 }
 </script>

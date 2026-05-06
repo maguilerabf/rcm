@@ -3,15 +3,13 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
-use App\Message\SendWelcomeEmailMessage;
 use App\Repository\UserRepository;
+use App\Service\UserApprovalService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -24,8 +22,7 @@ class RegisterController extends AbstractController
         private readonly UserRepository $users,
         private readonly UserPasswordHasherInterface $hasher,
         private readonly ValidatorInterface $validator,
-        private readonly Security $security,
-        private readonly MessageBusInterface $bus,
+        private readonly UserApprovalService $approval,
     ) {
     }
 
@@ -60,30 +57,20 @@ class RegisterController extends AbstractController
             ->setEmail($email)
             ->setFirstName($firstName)
             ->setLastName($lastName)
-            ->setRoles(['ROLE_USER']);
+            ->setRoles(['ROLE_USER'])
+            ->setStatus(User::STATUS_PENDING);
         $user->setPassword($this->hasher->hashPassword($user, $password));
 
         $this->em->persist($user);
         $this->em->flush();
 
-        $this->security->login($user);
+        // Mail al super-admin para aprobar/rechazar.
+        $this->approval->notifyPendingRegistration($user);
 
-        // Welcome email async (no bloquea el response del registro).
-        $this->bus->dispatch(new SendWelcomeEmailMessage(
-            email: $user->getEmail(),
-            firstName: $user->getFirstName(),
-            lastName: $user->getLastName(),
-        ));
-
+        // No autologin: la cuenta queda pendiente.
         return new JsonResponse([
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'displayName' => $user->getDisplayName(),
-                'roles' => $user->getRoles(),
-            ],
+            'pending' => true,
+            'message' => 'Tu solicitud fue enviada. Cuando el administrador la apruebe vas a recibir un correo y podrás iniciar sesión.',
         ], Response::HTTP_CREATED);
     }
 }

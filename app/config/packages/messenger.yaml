@@ -20,3 +20,4 @@ framework:
             App\Message\SendDuplicadosEmailMessage: async
             App\Message\SendWelcomeEmailMessage: async
             App\Message\SendPasswordResetEmailMessage: async
+            App\Message\SendApprovalRequestMessage: async

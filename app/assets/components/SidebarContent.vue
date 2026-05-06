@@ -51,7 +51,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
-import { Squares2X2Icon, UsersIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/vue/24/outline';
+import { Squares2X2Icon, UsersIcon, UserGroupIcon, ArrowLeftStartOnRectangleIcon } from '@heroicons/vue/24/outline';
 
 defineEmits(['navigate']);
 
@@ -59,11 +59,18 @@ const auth = useAuthStore();
 const router = useRouter();
 
 const duplicadosFullCount = ref(null);
+const pendingUsersCount = ref(0);
 
-const items = computed(() => [
-    { to: { name: 'identificacion-sectores' }, label: 'Identificación Sectores', icon: Squares2X2Icon },
-    { to: { name: 'duplicados-inscritos' }, label: 'Duplicados Inscritos', icon: UsersIcon, badge: duplicadosFullCount.value },
-]);
+const items = computed(() => {
+    const list = [
+        { to: { name: 'identificacion-sectores' }, label: 'Identificación Sectores', icon: Squares2X2Icon },
+        { to: { name: 'duplicados-inscritos' }, label: 'Duplicados Inscritos', icon: UsersIcon, badge: duplicadosFullCount.value },
+    ];
+    if (auth.isSuperAdmin) {
+        list.push({ to: { name: 'usuarios' }, label: 'Usuarios', icon: UserGroupIcon, badge: pendingUsersCount.value });
+    }
+    return list;
+});
 
 function formatBadge(n) {
     if (n > 99) return '99+';
@@ -76,6 +83,12 @@ async function loadCounters() {
         const { data } = await api.get('/duplicados-inscritos/stats');
         duplicadosFullCount.value = data.fullGroups;
     } catch (_) { /* silencioso */ }
+    if (auth.isSuperAdmin) {
+        try {
+            const { data } = await api.get('/admin/users/pending-count', { _silent: true });
+            pendingUsersCount.value = data.count;
+        } catch (_) { /* silencioso */ }
+    }
 }
 
 async function onLogout() {

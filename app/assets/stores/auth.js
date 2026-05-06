@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', {
             || [state.user?.firstName, state.user?.lastName].filter(Boolean).join(' ')
             || state.user?.email
             || '',
+        isSuperAdmin: (state) => !!state.user?.isSuperAdmin,
     },
     actions: {
         async fetchMe() {
@@ -42,11 +43,11 @@ export const useAuthStore = defineStore('auth', {
             this.error = null;
             try {
                 const { data } = await api.post('/register', { firstName, lastName, email, password }, { _silent: true });
-                this.user = data.user;
-                return true;
+                // Registro queda pendiente de aprobación: NO autologin.
+                return data;
             } catch (e) {
                 this.error = e.response?.data?.error || 'No se pudo crear la cuenta.';
-                return false;
+                return null;
             } finally {
                 this.loading = false;
             }

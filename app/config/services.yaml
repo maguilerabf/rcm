@@ -3,6 +3,8 @@ parameters:
     app.mailer_from: '%env(MAILER_FROM)%'
     app.storage_threshold_bytes: '%env(int:STORAGE_THRESHOLD_BYTES)%'
     app.storage_target_bytes: '%env(int:STORAGE_TARGET_BYTES)%'
+    app.super_admin_email: '%env(default:default_super_admin_email:SUPER_ADMIN_EMAIL)%'
+    default_super_admin_email: 'm.aguilera89@gmail.com'
 
 services:
     _defaults:
@@ -15,6 +17,7 @@ services:
             int $thresholdBytes: '%app.storage_threshold_bytes%'
             int $targetBytes: '%app.storage_target_bytes%'
             string $projectDir: '%kernel.project_dir%'
+            string $superAdminEmail: '%app.super_admin_email%'
 
     App\:
         resource: '../src/'

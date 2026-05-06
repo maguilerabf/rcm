@@ -41,6 +41,18 @@ const routes = [
                 name: 'duplicados-inscritos',
                 component: () => import('../views/modules/DuplicadosInscritos.vue'),
             },
+            {
+                path: 'usuarios',
+                name: 'usuarios',
+                component: () => import('../views/Usuarios.vue'),
+                meta: { superAdminOnly: true },
+            },
+            {
+                path: 'admin/aprobar/:token',
+                name: 'aprobar-token',
+                component: () => import('../views/AprobarToken.vue'),
+                meta: { superAdminOnly: true },
+            },
         ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
@@ -57,6 +69,9 @@ router.beforeEach((to) => {
         return { name: 'login', query: { redirect: to.fullPath } };
     }
     if (to.meta.guestOnly && auth.isAuthenticated) {
+        return { name: 'identificacion-sectores' };
+    }
+    if (to.meta.superAdminOnly && !auth.isSuperAdmin) {
         return { name: 'identificacion-sectores' };
     }
 });

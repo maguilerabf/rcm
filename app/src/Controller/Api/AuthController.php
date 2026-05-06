@@ -10,6 +10,10 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class AuthController extends AbstractController
 {
+    public function __construct(private readonly string $superAdminEmail = 'm.aguilera89@gmail.com')
+    {
+    }
+
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me(): JsonResponse
     {
@@ -27,6 +31,8 @@ class AuthController extends AbstractController
                 'lastName' => $user->getLastName(),
                 'displayName' => $user->getDisplayName(),
                 'roles' => $user->getRoles(),
+                'status' => $user->getStatus(),
+                'isSuperAdmin' => strcasecmp($user->getEmail(), $this->superAdminEmail) === 0,
             ],
         ]);
     }

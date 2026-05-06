@@ -12,6 +12,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\UniqueConstraint(name: 'users_email_uniq', columns: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_REJECTED = 'rejected';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -31,6 +35,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'json')]
     private array $roles = ['ROLE_USER'];
+
+    /** pending|active|rejected. Solo `active` puede iniciar sesión. */
+    #[ORM\Column(length: 16, options: ['default' => 'active'])]
+    private string $status = self::STATUS_ACTIVE;
+
+    #[ORM\Column(name: 'approval_token', type: 'string', length: 64, nullable: true)]
+    private ?string $approvalToken = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'approved_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $approvedBy = null;
+
+    #[ORM\Column(name: 'approved_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $approvedAt = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -121,4 +139,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->createdAt;
     }
+
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $s): self
+    {
+        if (!in_array($s, [self::STATUS_PENDING, self::STATUS_ACTIVE, self::STATUS_REJECTED], true)) {
+            throw new \InvalidArgumentException("Estado inválido: {$s}");
+        }
+        $this->status = $s;
+        return $this;
+    }
+    public function isActive(): bool { return $this->status === self::STATUS_ACTIVE; }
+    public function isPending(): bool { return $this->status === self::STATUS_PENDING; }
+    public function isRejected(): bool { return $this->status === self::STATUS_REJECTED; }
+
+    public function getApprovalToken(): ?string { return $this->approvalToken; }
+    public function setApprovalToken(?string $t): self { $this->approvalToken = $t; return $this; }
+
+    public function getApprovedBy(): ?User { return $this->approvedBy; }
+    public function setApprovedBy(?User $u): self { $this->approvedBy = $u; return $this; }
+
+    public function getApprovedAt(): ?\DateTimeImmutable { return $this->approvedAt; }
+    public function setApprovedAt(?\DateTimeImmutable $at): self { $this->approvedAt = $at; return $this; }
 }
