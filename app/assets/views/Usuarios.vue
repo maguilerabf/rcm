@@ -36,7 +36,8 @@
                 <h3 class="font-semibold text-lg text-slate-900">Usuarios</h3>
                 <span class="text-xs text-slate-500">{{ allUsers.length }} en total</span>
             </div>
-            <table class="w-full text-sm">
+            <!-- Tabla (md+) -->
+            <table class="w-full text-sm hidden md:table">
                 <thead class="bg-slate-50 text-slate-700">
                     <tr>
                         <th class="text-left px-4 py-2.5 font-semibold">Usuario</th>
@@ -53,18 +54,36 @@
                             <div class="text-xs text-slate-500">{{ u.email }}</div>
                         </td>
                         <td class="px-4 py-2.5">
-                            <span :class="u.isSuperAdmin ? 'badge-blue' : 'badge-slate'">{{ roleLabel(u) }}</span>
+                            <span :class="[u.isSuperAdmin ? 'badge-blue' : 'badge-slate', 'whitespace-nowrap']">{{ roleLabel(u) }}</span>
                         </td>
                         <td class="px-4 py-2.5">
-                            <span :class="statusClass(u.status)">{{ statusLabel(u.status) }}</span>
+                            <span :class="[statusClass(u.status), 'whitespace-nowrap']">{{ statusLabel(u.status) }}</span>
                         </td>
-                        <td class="px-4 py-2.5 text-xs text-slate-500">{{ formatDateTime(u.createdAt) }}</td>
+                        <td class="px-4 py-2.5 text-xs text-slate-500 whitespace-nowrap">{{ formatDateTime(u.createdAt) }}</td>
                         <td class="px-4 py-2.5 text-right">
                             <button v-if="canChangeRole(u)" @click="changeRole(u)" class="text-brand-700 hover:text-brand-800 text-xs">Cambiar rol</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Cards (mobile) -->
+            <ul class="md:hidden divide-y divide-slate-100">
+                <li v-for="u in allUsers" :key="u.id" class="px-4 py-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-medium text-slate-900 truncate">{{ u.displayName }}</div>
+                            <div class="text-xs text-slate-500 truncate">{{ u.email }}</div>
+                        </div>
+                        <button v-if="canChangeRole(u)" @click="changeRole(u)" class="text-brand-700 hover:text-brand-800 text-xs flex-shrink-0">Cambiar rol</button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <span :class="[u.isSuperAdmin ? 'badge-blue' : 'badge-slate', 'whitespace-nowrap']">{{ roleLabel(u) }}</span>
+                        <span :class="[statusClass(u.status), 'whitespace-nowrap']">{{ statusLabel(u.status) }}</span>
+                    </div>
+                    <div class="mt-1.5 text-[11px] text-slate-500">Registrado {{ formatDateTime(u.createdAt) }}</div>
+                </li>
+            </ul>
         </div>
     </div>
 </template>
