@@ -9,7 +9,14 @@
             </p>
         </div>
 
-        <div v-if="!job" class="card p-8 text-center">
+        <!-- Mientras hacemos la primera carga, no sabemos aún si hay padrón
+             cargado o no. En vez de mostrar el mensaje "no hay datos", mostramos
+             el pingüino para no engañar al usuario. -->
+        <div v-if="initialLoad" class="card p-12">
+            <WalkingPenguin :size="120" label="Buscando padrones cargados…" />
+        </div>
+
+        <div v-else-if="!job" class="card p-8 text-center">
             <ExclamationTriangleIcon class="h-10 w-10 mx-auto text-amber-400 mb-3" />
             <p class="text-slate-700 font-medium">Aún no has cargado un padrón de inscritos.</p>
             <p class="text-sm text-slate-500 mt-1">
@@ -99,6 +106,7 @@ import StatCard from '../../components/StatCard.vue';
 import FilterPill from '../../components/FilterPill.vue';
 import DuplicateGroupCard from '../../components/DuplicateGroupCard.vue';
 import EmailDialog from '../../components/EmailDialog.vue';
+import WalkingPenguin from '../../components/WalkingPenguin.vue';
 import {
     UsersIcon, UserGroupIcon, CheckBadgeIcon, ExclamationCircleIcon,
     MagnifyingGlassIcon, ArrowPathIcon, ArrowDownTrayIcon, PaperAirplaneIcon,
@@ -117,6 +125,7 @@ const stats = reactive({});
 const selectedTypes = ref([]); // vacío = todas
 const search = ref('');
 const loading = ref(false);
+const initialLoad = ref(true);   // mientras dura la primera consulta no sabemos si hay padrón
 const downloading = ref(false);
 const emailDialog = ref(false);
 
@@ -165,6 +174,7 @@ async function reload() {
         Object.assign(stats, data.stats);
     } finally {
         loading.value = false;
+        initialLoad.value = false;
     }
 }
 
