@@ -13,7 +13,7 @@
              cargado o no. En vez de mostrar el mensaje "no hay datos", mostramos
              el pingüino para no engañar al usuario. -->
         <div v-if="initialLoad" class="card p-12">
-            <WalkingPenguin :size="120" label="Buscando padrones cargados…" />
+            <WalkingPenguin :size="120" label="Cargando…" />
         </div>
 
         <div v-else-if="!job" class="card p-8 text-center">
