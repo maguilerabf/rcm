@@ -93,6 +93,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import api from '../api/client';
 import { useAuthStore } from '../stores/auth';
 import { ClockIcon } from '@heroicons/vue/24/outline';
+import { confirmDialog } from '../utils/dialogs';
 
 const auth = useAuthStore();
 const allUsers = ref([]);
@@ -138,7 +139,13 @@ async function approve(u) {
 }
 
 async function reject(u) {
-    if (!confirm(`¿Rechazar la solicitud de ${u.email}?`)) return;
+    const ok = await confirmDialog({
+        title: 'Rechazar solicitud',
+        text: `¿Rechazar la solicitud de ${u.email}?`,
+        danger: true,
+        confirmText: 'Sí, rechazar',
+    });
+    if (!ok) return;
     await api.post(`/admin/users/${u.id}/reject`);
     await load();
 }
@@ -146,7 +153,12 @@ async function reject(u) {
 async function changeRole(u) {
     const isAdmin = u.roles?.includes('ROLE_ADMIN');
     const next = isAdmin ? 'ROLE_USER' : 'ROLE_ADMIN';
-    if (!confirm(`Cambiar rol de ${u.email} a ${next === 'ROLE_ADMIN' ? 'Admin' : 'Usuario'}?`)) return;
+    const ok = await confirmDialog({
+        title: 'Cambiar rol',
+        text: `Cambiar rol de ${u.email} a ${next === 'ROLE_ADMIN' ? 'Admin' : 'Usuario'}.`,
+        confirmText: 'Cambiar rol',
+    });
+    if (!ok) return;
     await api.patch(`/admin/users/${u.id}`, { roles: [next] });
     await load();
 }
